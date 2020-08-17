@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "zoom-mentorat"
+  },
+  "targets": {
+    "zoom-mentorat": {
+      "hosting": {
+        "zoom-mentorat": [
+          "zoom-mentorat"
+        ]
+      }
+    }
   }
 }

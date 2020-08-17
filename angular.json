@@ -104,6 +104,10 @@
           "options": {
             "browserTarget": "zoom-mentorat:build"
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {}
         }
       }
     }

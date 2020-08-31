@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { OAuth } from '../../interfaces/oauth.interface';
-import { ZoomService } from '../../services/zoom.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-redirect',
@@ -12,7 +12,7 @@ export class RedirectComponent  {
 
   constructor(private activatedRoute: ActivatedRoute,
               private router: Router,
-              private zoomService: ZoomService) {
+              private authService: AuthService) {
     this.activatedRoute.queryParams.subscribe((params: Params) => {
       if (params['code'] !== undefined) {
         const code = params['code'];
@@ -23,18 +23,9 @@ export class RedirectComponent  {
   }
 
   private getToken(): void {
-    this.zoomService.getToken().subscribe((oauth: OAuth) => {
-      this.updateStorageWithOAuth(oauth);
+    this.authService.getToken().subscribe((oauth: OAuth) => {
+      this.authService.updateStorageWithOAuth(oauth);
       this.router.navigate(['/']).then();
     });
-  }
-
-  private updateStorageWithOAuth(oAuth: OAuth): void {
-    localStorage.setItem('access_token', oAuth.access_token);
-    localStorage.setItem('date', new Date().toDateString());
-    localStorage.setItem('expires_in', oAuth.expires_in.toString());
-    localStorage.setItem('refresh_token', oAuth.refresh_token);
-    localStorage.setItem('scope', oAuth.scope);
-    localStorage.setItem('token_type', oAuth.token_type);
   }
 }

@@ -1,5 +1,5 @@
 export const environment = {
-  baseUrl: 'http://d05407931470.ngrok.io',
+  baseUrl: 'http://6452bafabf26.ngrok.io',
   production: false,
   zoom: {
     clientID: '3HfCVJFeQ7K6VFNkWNrOnQ',

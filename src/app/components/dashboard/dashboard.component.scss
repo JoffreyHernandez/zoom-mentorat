@@ -5,3 +5,17 @@
 .h-full-meetings {
   height: calc(100vh - 196px)
 }
+
+.toggle-checkbox {
+  outline: none;
+}
+
+.toggle-checkbox:checked {
+  @apply: right-0 border-teal-5OO;
+  right: 0;
+  border-color: #38b2ac;
+}
+.toggle-checkbox:checked + .toggle-label {
+  @apply: bg-teal-500;
+  background-color: #38b2ac;
+}

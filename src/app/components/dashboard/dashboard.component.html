@@ -3,8 +3,8 @@
         <div class="m-3 flex justify-between">
             <div class="font-bold text-2xl">Listes des soutenances</div>
             <div *ngIf="meetings" class="rounded-full py-2 px-4 bg-teal-500 text-white h-8 text-sm items-center flex">
-                {{ (meetings.page_size * (page - 1)) + 1 }}
-                -{{meetings.page_size * page < meetings.total_records ? meetings.page_size * page : meetings.total_records}}
+                {{ meetings.page_count !== 0 ? (meetings.page_size * (page - 1)) + 1 : 0 }}
+                - {{meetings.page_size * page < meetings.total_records ? meetings.page_size * page : meetings.total_records}}
                 sur {{ meetings.total_records }}
             </div>
         </div>
@@ -20,7 +20,18 @@
                 </div>
             </div>
         </div>
-        <div *ngIf="meetings" class="flex justify-center mt-2">
+        <div *ngIf="meetings" class="flex justify-around mt-2">
+            <div class="flex items-center">
+                <form [formGroup]="previousMeetingForm">
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                               formControlName="nextMeeting" id="toggle" name="toggle"
+                               type="checkbox"/>
+                        <label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer" for="toggle"></label>
+                    </div>
+                    <label class="text-xs text-gray-700" for="toggle">Meeting futur</label>
+                </form>
+            </div>
             <div class="inline-flex">
                 <button (click)="previous()"
                         [disabled]="page === 0"
@@ -43,7 +54,7 @@
         </div>
         <div class="rounded shadow-lg m-2 mt-5 px-6 border border-solid border-grey-600">
             <div class="px-6 py-4">
-                <form [formGroup]="form" (ngSubmit)="onSubmit()" class="w-full max-w-sm">
+                <form (ngSubmit)="onSubmit()" [formGroup]="newMeetingForm" class="w-full max-w-sm">
                     <div class="md:flex md:items-center mb-6">
                         <div class="md:w-1/3">
                             <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="full-name">
@@ -80,11 +91,54 @@
                     <div class="md:flex md:items-center">
                         <div class="md:w-1/3"></div>
                         <div class="md:w-2/3">
-                            <button [disabled]="!form.valid"
-                                    [ngClass]="{'cursor-not-allowed opacity-50': !form.valid}"
+                            <button [disabled]="!newMeetingForm.valid"
+                                    [ngClass]="{'cursor-not-allowed opacity-50': !newMeetingForm.valid}"
                                     class="shadow bg-teal-500 hover:bg-teal-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
                                     type="submit">
                                 Créer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="m-3 flex justify-between">
+            <div class="font-bold text-2xl">Premiere session</div>
+        </div>
+        <div class="rounded shadow-lg m-2 mt-5 px-6 border border-solid border-grey-600">
+            <div class="px-6 py-4">
+                <form (ngSubmit)="onSubmit()" [formGroup]="newMeetingForm" class="w-full max-w-sm">
+                    <div class="md:flex md:items-center mb-6">
+                        <div class="md:w-1/3">
+                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="full-name-contact">
+                                Nom complet
+                            </label>
+                        </div>
+                        <div class="md:w-2/3">
+                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                                   formControlName="fullName" id="full-name-contact" placeholder="John Doe" type="text">
+                        </div>
+                    </div>
+                    <div class="md:flex md:items-center mb-6">
+                        <div class="md:w-1/3">
+                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="email-contact">
+                                Adresse email
+                            </label>
+                        </div>
+                        <div class="md:w-2/3">
+                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                                   formControlName="email" id="email-contact" placeholder="john.doe@mail.com" type="email">
+                        </div>
+                    </div>
+
+                    <div class="md:flex md:items-center">
+                        <div class="md:w-1/3"></div>
+                        <div class="md:w-2/3">
+                            <button [disabled]="!newMeetingForm.valid"
+                                    [ngClass]="{'cursor-not-allowed opacity-50': !newMeetingForm.valid}"
+                                    class="shadow bg-teal-500 hover:bg-teal-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+                                    type="submit">
+                                Envoyer l'email
                             </button>
                         </div>
                     </div>

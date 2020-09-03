@@ -1,7 +1,10 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as functions from 'firebase-functions';
+import { JoiValidation } from './interfaces/joi.interface';
 import { oAuthToken } from './oauthToken';
+import { sendEmail } from './sendGrid';
+import { extractErrorFromJoi, validateField } from './utils';
 
 const app = express();
 export const node = express();
@@ -16,8 +19,21 @@ app.use((req, res, next) => {
 
 app.post('/oauth-token', bodyParser.raw({ type: 'application/json' }),
   (request, response) =>
-    oAuthToken(request, response)
+    oAuthToken(request, response),
 );
+
+app.post('/send-email', bodyParser.raw({ type: 'application/json' }),
+  async (request, response) => {
+    const joiValidation: JoiValidation = validateField(request.body);
+    if (joiValidation.error) {
+      const extractError = extractErrorFromJoi(joiValidation.error.details);
+      response.status(400);
+      response.send(extractError);
+    } else {
+      await sendEmail(request.body);
+      response.sendStatus(200);
+    }
+  });
 
 node.use('/api/v1', app);
 node.use(bodyParser.urlencoded({ extended: false }));

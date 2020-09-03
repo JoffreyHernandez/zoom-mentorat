@@ -1,27 +1,36 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CreateMeeting } from '../../interfaces/createMeeting.interface';
 import { Meeting } from '../../interfaces/meeting.interface';
 import { Meetings } from '../../interfaces/meetings.interface';
 import { AuthService } from '../../services/auth.service';
 import { MeetingsService } from '../../services/meetings.service';
+import { createMeetingBuilder } from '../../utils/createMeetingBuilder.util';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
-  public form: FormGroup;
+  public firstSessionForm: FormGroup;
+  public newMeetingForm: FormGroup;
+  public previousMeetingForm: FormGroup;
   public meetings: Meetings;
   public meeting: Meeting;
   public page = 1;
 
+  private nextMeeting: boolean;
+
   constructor(private authService: AuthService,
               private fb: FormBuilder,
               private meetingsService: MeetingsService) {
-    this.buildForm();
+  }
+
+  public ngOnInit(): void {
+    this.buildNewMeetingForm();
+    this.buildPreviousMeetingForm();
     if (!localStorage.getItem('access_token')) {
       this.authService.askForAuthorization();
     } else {
@@ -31,44 +40,13 @@ export class DashboardComponent {
 
   public next(): void {
     this.page++;
-    this.meetingsService
-      .getAllMeetings(false, this.page)
-      .subscribe((meetings: Meetings) => this.meetings = meetings);
+    this.getDefaultMeetings();
   }
 
   public onSubmit(): void {
-    console.log(this.form.value);
-    if (this.form.valid) {
-      const json: CreateMeeting = {
-        topic: `Soutenance ${this.form.value.fullName}`,
-        type: 1,
-        start_time: this.form.value.date,
-        duration: 60,
-        schedule_for: null,
-        timezone: 'Europe/Paris',
-        password: 'Op3ncl4$$',
-        agenda: 'description',
-        recurrence: null,
-        settings: {
-          host_video: true,
-          participant_video: false,
-          cn_meeting: false,
-          in_meeting: false,
-          join_before_host: false,
-          mute_upon_entry: false,
-          watermark: false,
-          use_pmi: false,
-          approval_type: 2,
-          registration_type: null,
-          audio: 'voip',
-          auto_recording: 'local',
-          enforce_login: false,
-          enforce_login_domains: null,
-          alternative_hosts: null,
-          global_dial_in_countries: null,
-          registrants_email_notification: null,
-        },
-      };
+    if (this.newMeetingForm.valid) {
+      const { fullName, date } = this.newMeetingForm.value;
+      const json: CreateMeeting = createMeetingBuilder(fullName, date);
       this.meetingsService.createMeeting(json)
         .subscribe(s => console.log('s => ' + s));
     }
@@ -80,12 +58,24 @@ export class DashboardComponent {
   }
 
   private getDefaultMeetings(): void {
-    this.meetingsService.getAllMeetings(false, this.page)
+    this.meetingsService.getAllMeetings(this.nextMeeting, this.page)
       .subscribe((meetings: Meetings) => this.meetings = meetings);
   }
 
-  private buildForm() {
-    this.form = this.fb.group({
+  private buildPreviousMeetingForm() {
+    this.previousMeetingForm = this.fb.group({
+      nextMeeting: [
+        true,
+        Validators.required,
+      ],
+    });
+    this.previousMeetingForm.valueChanges.subscribe(form => {
+      this.nextMeeting = form.nextMeeting;
+    });
+  }
+
+  private buildNewMeetingForm() {
+    this.newMeetingForm = this.fb.group({
         fullName: [
           '',
           Validators.required,

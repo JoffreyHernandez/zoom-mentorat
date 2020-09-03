@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RedirectComponent } from './components/redirect/redirect.component';
+import { MeetingsComponent } from './components/meetings/meetings.component';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -18,6 +19,7 @@ registerLocaleData(localeFr, 'fr');
     AppComponent,
     DashboardComponent,
     RedirectComponent,
+    MeetingsComponent,
   ],
   imports: [
     AppRoutingModule,

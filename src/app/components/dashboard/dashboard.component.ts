@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { CreateMeeting } from '../../interfaces/createMeeting.interface';
 import { Meeting } from '../../interfaces/meeting.interface';
 import { Meetings } from '../../interfaces/meetings.interface';
@@ -17,11 +18,7 @@ export class DashboardComponent implements OnInit {
   public firstSessionForm: FormGroup;
   public newMeetingForm: FormGroup;
   public previousMeetingForm: FormGroup;
-  public meetings: Meetings;
   public meeting: Meeting;
-  public page = 1;
-
-  private nextMeeting: boolean;
 
   constructor(private authService: AuthService,
               private fb: FormBuilder,
@@ -29,18 +26,19 @@ export class DashboardComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.buildNewMeetingForm();
-    this.buildPreviousMeetingForm();
     if (!localStorage.getItem('access_token')) {
       this.authService.askForAuthorization();
-    } else {
-      this.getDefaultMeetings();
     }
+    this.buildNewMeetingForm();
+    this.buildPreviousMeetingForm();
+  }
+
+  public getMeetings(): Observable<Meetings> {
+    return this.meetingsService.meetings$;
   }
 
   public next(): void {
-    this.page++;
-    this.getDefaultMeetings();
+    this.meetingsService.nextPage();
   }
 
   public onSubmit(): void {
@@ -53,25 +51,18 @@ export class DashboardComponent implements OnInit {
   }
 
   public previous(): void {
-    this.page--;
-    this.getDefaultMeetings();
-  }
-
-  private getDefaultMeetings(): void {
-    this.meetingsService.getAllMeetings(this.nextMeeting, this.page)
-      .subscribe((meetings: Meetings) => this.meetings = meetings);
+    this.meetingsService.previousPage();
   }
 
   private buildPreviousMeetingForm() {
     this.previousMeetingForm = this.fb.group({
       nextMeeting: [
-        true,
+        false,
         Validators.required,
       ],
     });
-    this.previousMeetingForm.valueChanges.subscribe(form => {
-      this.nextMeeting = form.nextMeeting;
-    });
+    this.previousMeetingForm.valueChanges.subscribe(form =>
+      this.meetingsService.changeNextMeeting(form.nextMeeting));
   }
 
   private buildNewMeetingForm() {

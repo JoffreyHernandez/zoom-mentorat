@@ -1,35 +1,73 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, OnInit } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CreateMeeting } from '../interfaces/createMeeting.interface';
 import { Meetings } from '../interfaces/meetings.interface';
+import { PagingMeeting } from '../interfaces/pagingMeeting.interface';
+import { getHeaders } from '../utils/headers.interface';
 
 @Injectable({
   providedIn: 'root',
 })
-export class MeetingsService {
+export class MeetingsService implements OnInit {
 
-  private headers: HttpHeaders;
+  private baseUrl = 'https://api.zoom.us/v2/users/me/meetings';
+  private meetingsSubject = new BehaviorSubject<Meetings>(null);
+  private pagingMeeting = {
+    nextMeeting: true,
+    page: 1,
+  };
+  private refreshSubject = new BehaviorSubject<PagingMeeting>(this.pagingMeeting);
+
+  public meetings$ = this.meetingsSubject.asObservable();
 
   constructor(private httpClient: HttpClient) {
-    this.headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${localStorage.getItem('access_token')}`)
-      .set('Access-Control-Allow-Origin', '*');
   }
 
-  public getAllMeetings(onlyUpcoming: boolean = false, page_number: number) {
-    const url = 'https://api.zoom.us/v2/users/me/meetings';
+  public ngOnInit(): void {
+    this.refreshSubject.asObservable()
+      .subscribe((PagingMeeting: PagingMeeting) =>
+        this.getAllMeetings(PagingMeeting).subscribe((meetings: Meetings) =>
+          this.meetingsSubject.next(meetings)));
+  }
+
+  public createMeeting(meeting: CreateMeeting): Observable<any> {
+    return this.httpClient.post<any>(this.baseUrl, meeting, { headers: getHeaders() });
+  }
+
+  public changeNextMeeting(nextMeeting: boolean): void {
+    this.pagingMeeting.nextMeeting = nextMeeting;
+    this.nextRefreshSubject();
+  }
+
+  public getPage(): number {
+    return this.pagingMeeting.page;
+  }
+
+  public nextPage(): void {
+    this.pagingMeeting.page++;
+    this.nextRefreshSubject();
+  }
+
+  public previousPage(): void {
+    if (this.pagingMeeting.page !== 1) {
+      this.pagingMeeting.page--;
+      this.nextRefreshSubject();
+    }
+  }
+
+  private getAllMeetings(pagingMeeting: PagingMeeting): Observable<Meetings> {
     let params = new HttpParams();
-    if (onlyUpcoming) {
+    if (pagingMeeting.nextMeeting) {
       params = params.set('type', 'upcoming');
     }
-    if (page_number !== null) {
-      params = params.set('page_number', page_number.toString());
+    if (pagingMeeting.page !== null) {
+      params = params.set('page_number', pagingMeeting.page.toString());
     }
-    return this.httpClient.get<Meetings>(url, { params, headers: this.headers });
+    return this.httpClient.get<Meetings>(this.baseUrl, { params, headers: getHeaders() });
   }
 
-  public createMeeting(meeting: CreateMeeting) {
-    const url = 'https://api.zoom.us/v2/users/me/meetings';
-    return this.httpClient.post<any>(url, meeting,{ headers: this.headers });
+  private nextRefreshSubject(): void {
+    this.refreshSubject.next(this.pagingMeeting);
   }
 }

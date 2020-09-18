@@ -30,8 +30,9 @@ app.post('/send-email', bodyParser.raw({ type: 'application/json' }),
       response.status(400);
       response.send(extractError);
     } else {
-      await sendEmail(request.body);
-      response.sendStatus(200);
+      const result = await sendEmail(request.body);
+      console.log('result => ' + result);
+      response.send(result).status(204);
     }
   });
 

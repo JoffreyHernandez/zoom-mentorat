@@ -1,5 +1,7 @@
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+const functions = require('firebase-functions');
+
+sgMail.setApiKey(functions.config().sendgrid.key);
 sgMail.setSubstitutionWrappers('{{', '}}');
 
 export const sendEmail = async (body: any) => {

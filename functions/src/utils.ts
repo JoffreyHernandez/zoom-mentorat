@@ -19,12 +19,13 @@ export const axiosErrorHandle = (error: AxiosError) => {
 
 export const validateField = (body: any) => {
   const schema = Joi.object({
-    date: Joi.required(),
-    fullName: Joi.required(),
-    pwd: Joi.required(),
-    lien: Joi.required(),
+    code: Joi.string().required(),
+    date: Joi.string().required(),
+    fullName: Joi.string().required(),
+    id: Joi.string().required(),
+    lien: Joi.string().required(),
   });
-  return schema.validate(body, { abortEarly: false});
+  return schema.validate(body, { abortEarly: false });
 };
 
 export const extractErrorFromJoi = (details: Detail[]) => {
